@@ -102,7 +102,8 @@ def main():
         'MACD_Crossover': macd_signals
     }
     
-    comparison_df = engine.run_strategy_comparison(df_with_indicators, strategies)
+    from backtest import run_strategy_comparison
+    comparison_df = run_strategy_comparison(df_with_indicators, strategies)
     print("✅ Strategy Comparison:")
     print(comparison_df[['strategy', 'total_return', 'sharpe_ratio', 'max_drawdown']].to_string(index=False))
     

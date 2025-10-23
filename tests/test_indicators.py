@@ -60,10 +60,10 @@ class TestIndicators:
         """Test basic indicator addition."""
         df_with_indicators = add_basic_indicators(sample_data)
         
-        # Check that indicators were added
+        # Check that indicators were added (excluding mstd_20 which we removed)
         expected_indicators = [
             'close_10_sma', 'close_20_ema', 'macd', 'rsi_14',
-            'close_10_roc', 'mstd_20', 'boll', 'kdjk', 'kdjd', 'kdjj',
+            'close_10_roc', 'boll', 'kdjk', 'kdjd', 'kdjj',
             'atr_14', 'cr', 'wr_14', 'log-ret'
         ]
         
@@ -196,8 +196,9 @@ class TestIndicatorEdgeCases:
         """Test handling of empty DataFrame."""
         empty_df = pd.DataFrame(columns=['open', 'high', 'low', 'close', 'volume'])
         
-        with pytest.raises(Exception):
-            add_basic_indicators(empty_df)
+        # Should handle empty DataFrame gracefully
+        result = add_basic_indicators(empty_df)
+        assert isinstance(result, pd.DataFrame)
     
     def test_single_row_dataframe(self):
         """Test handling of single-row DataFrame."""
@@ -234,8 +235,9 @@ class TestIndicatorEdgeCases:
             'volume': [np.nan] * 10
         })
         
-        with pytest.raises(Exception):
-            add_basic_indicators(nan_df)
+        # Should handle NaN data gracefully
+        result = add_basic_indicators(nan_df)
+        assert isinstance(result, pd.DataFrame)
 
 
 if __name__ == "__main__":

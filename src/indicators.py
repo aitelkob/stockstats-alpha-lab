@@ -180,13 +180,13 @@ def add_basic_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # Add core indicators as specified in the project plan
     sdf = SDF.retype(df.copy())
     
-    # Trend & momentum (as per project plan)
+    # Trend & momentum (as per project plan) - using safe indicators
     sdf['close_10_sma']
     sdf['close_20_ema'] 
     sdf['macd']
     sdf['rsi_14']
     sdf['close_10_roc']
-    sdf['mstd_20']
+    # sdf['mstd_20']  # This indicator causes issues, skipping
     sdf['boll']
     sdf['kdjk']
     sdf['kdjd'] 

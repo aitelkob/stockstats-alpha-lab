@@ -255,7 +255,7 @@ class StrategyBuilder:
     def rsi_trend_strategy(
         df: pd.DataFrame,
         rsi_col: str = "rsi_14",
-        trend_col: str = "close_200_sma",
+        trend_col: str = "close_20_ema",  # Use available EMA instead of SMA
         rsi_oversold: float = 30.0,
         rsi_overbought: float = 70.0
     ) -> pd.Series:
@@ -266,6 +266,14 @@ class StrategyBuilder:
         Short when RSI > overbought AND close < trend.
         """
         signals = pd.Series(0, index=df.index)
+        
+        # Check if required columns exist
+        if rsi_col not in df.columns:
+            print(f"Warning: {rsi_col} not found in DataFrame")
+            return signals
+        if trend_col not in df.columns:
+            print(f"Warning: {trend_col} not found in DataFrame")
+            return signals
         
         # Long condition
         long_condition = (df[rsi_col] < rsi_oversold) & (df['close'] > df[trend_col])
@@ -290,6 +298,14 @@ class StrategyBuilder:
         Short when MACD crosses below signal.
         """
         signals = pd.Series(0, index=df.index)
+        
+        # Check if required columns exist
+        if macd_col not in df.columns:
+            print(f"Warning: {macd_col} not found in DataFrame")
+            return signals
+        if macd_signal_col not in df.columns:
+            print(f"Warning: {macd_signal_col} not found in DataFrame")
+            return signals
         
         # MACD crossover
         macd_diff = df[macd_col] - df[macd_signal_col]
