@@ -40,6 +40,17 @@ stockstats-alpha-lab/
 └── README.md                   # This file
 ```
 
+## 📚 User Guides
+
+### For Everyone (Non-Technical Users)
+- **[🚀 Quick Start Guide](QUICK_START_GUIDE.md)** - Get up and running in 5 minutes
+- **[📊 Complete User Guide](DASHBOARD_USER_GUIDE.md)** - Detailed explanation of every feature
+- **[🎯 Strategy Parameters Guide](STRATEGY_PARAMETERS_GUIDE.md)** - How to use strategy parameters and risk management
+
+### For Developers
+- **[🔧 Makefile Guide](MAKEFILE_GUIDE.md)** - How to use all the development commands
+- **[✨ Enhancement Summary](ENHANCEMENT_SUMMARY.md)** - Overview of all advanced features
+
 ## 🛠️ Installation
 
 ### Prerequisites

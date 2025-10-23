@@ -65,6 +65,29 @@ def main():
     st.markdown('<h1 class="main-header">📈 StockStats Alpha Lab</h1>', unsafe_allow_html=True)
     st.markdown("### Advanced Quantitative Finance Research Platform")
     
+    # Add explanation for normal users
+    with st.expander("ℹ️ What is this dashboard? (Click to learn more)"):
+        st.markdown("""
+        **Welcome! This dashboard helps you analyze stocks and make better investment decisions.**
+        
+        🎯 **What it does:**
+        - Analyzes stock price patterns using mathematical formulas
+        - Tests trading strategies using historical data
+        - Uses artificial intelligence to predict future movements
+        - Calculates risk and performance metrics
+        
+        🚀 **How to use:**
+        1. **Start with Market Overview** - See the stock price chart
+        2. **Try Technical Analysis** - Look for buy/sell signals
+        3. **Test Strategies** - See how different approaches would have performed
+        4. **Use Machine Learning** - Get AI-powered predictions
+        5. **Check Performance** - Understand the risks and rewards
+        
+        📚 **Need help?** Use the built-in help sections in each tab above!
+        
+        ⚠️ **Remember:** This is a research tool, not financial advice. Always do your own research!
+        """)
+    
     # Sidebar
     st.sidebar.title("🔧 Configuration")
     
@@ -109,12 +132,13 @@ def main():
             df = load_and_process_data(ticker, period)
         
         # Main tabs
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
             "📊 Market Overview", 
             "🔧 Technical Analysis", 
             "💰 Strategy Backtesting", 
             "🤖 Machine Learning", 
-            "📈 Performance Analytics"
+            "📈 Performance Analytics",
+            "📚 Help & Guides"
         ])
         
         with tab1:
@@ -129,8 +153,8 @@ def main():
         with tab4:
             show_machine_learning(df)
         
-        with tab5:
-            show_performance_analytics(df)
+        with tab6:
+            show_help_guides()
             
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
@@ -322,6 +346,30 @@ def show_strategy_backtesting(df, rsi_oversold, rsi_overbought, macd_fast, macd_
     """Display strategy backtesting results."""
     st.header("💰 Strategy Backtesting")
     
+    # Add parameter explanation section
+    with st.expander("🔧 Understanding Strategy Parameters (Click to learn more)"):
+        st.markdown("""
+        ### 📊 **RSI Parameters**
+        - **RSI Oversold (30)**: When RSI falls below this level, we consider the stock "cheap" and look to buy
+        - **RSI Overbought (70)**: When RSI rises above this level, we consider the stock "expensive" and look to sell
+        
+        ### 📈 **MACD Parameters**
+        - **MACD Fast Period (12)**: How quickly MACD responds to price changes (lower = more sensitive)
+        - **MACD Slow Period (26)**: The baseline for MACD calculations (higher = smoother signals)
+        
+        ### ⚠️ **Risk Management**
+        - **Max Position Size (10%)**: Maximum percentage of portfolio to invest in one stock
+        - **Commission (0.1%)**: Trading fees per trade
+        - **Slippage (0.05%)**: Price difference between expected and actual execution
+        
+        ### 🎯 **How to Use These Parameters**
+        1. **Conservative**: Higher RSI thresholds, smaller position sizes
+        2. **Aggressive**: Lower RSI thresholds, larger position sizes
+        3. **Balanced**: Default values work well for most situations
+        
+        📚 **For detailed explanations, see**: [Strategy Parameters Guide](STRATEGY_PARAMETERS_GUIDE.md)
+        """)
+    
     # Create strategies
     strategies = {}
     
@@ -461,6 +509,11 @@ def show_machine_learning(df):
     forward_returns = labeler.forward_return_label(df, horizon=5)
     binary_labels = labeler.binary_classification_label(forward_returns)
     
+    # Add labels to dataframe
+    df_with_labels = df.copy()
+    df_with_labels['forward_returns'] = forward_returns
+    df_with_labels['binary_labels'] = binary_labels
+    
     # Feature selection
     indicator_cols = [col for col in df.columns if col not in ['open', 'high', 'low', 'close', 'volume']]
     
@@ -468,46 +521,67 @@ def show_machine_learning(df):
         st.warning("No technical indicators available for ML analysis.")
         return
     
-    # Create feature matrix
-    from labeling import create_feature_matrix
-    X, y = create_feature_matrix(df, indicator_cols, binary_labels.name)
-    
-    if X.empty or y.empty:
-        st.warning("Insufficient data for ML analysis.")
-        return
-    
     # Model selection
     col1, col2 = st.columns([1, 2])
     
     with col1:
         st.subheader("Model Configuration")
-        model_type = st.selectbox("Select Model", ["logistic", "random_forest"])
+        problem_type = st.selectbox("Problem Type", ["Classification", "Regression"])
+        model_type = st.selectbox("Select Model", ["logistic", "random_forest", "linear", "ridge"])
         validation_split = st.slider("Validation Split", 0.1, 0.5, 0.2)
     
     with col2:
-        # Train model
-        pipeline_manager = ModelPipeline()
-        pipeline_manager.create_classification_pipeline("ml_model", model_type)
-        
         try:
+            # Create feature matrix
+            from labeling import create_feature_matrix
+            
+            if problem_type == "Classification":
+                X, y = create_feature_matrix(df_with_labels, indicator_cols, 'binary_labels')
+                pipeline_manager = ModelPipeline()
+                pipeline_manager.create_classification_pipeline("ml_model", model_type)
+            else:  # Regression
+                X, y = create_feature_matrix(df_with_labels, indicator_cols, 'forward_returns')
+                pipeline_manager = ModelPipeline()
+                pipeline_manager.create_regression_pipeline("ml_model", model_type)
+            
+            if X.empty or y.empty:
+                st.warning("Insufficient data for ML analysis.")
+                return
+            
+            # Train model
             result = pipeline_manager.train_model("ml_model", X, y, validation_split)
             
             # Display metrics
             metrics = result['metrics']
             
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric("Accuracy", f"{metrics['accuracy']:.3f}")
-            
-            with col2:
-                st.metric("Precision", f"{metrics['precision']:.3f}")
-            
-            with col3:
-                st.metric("Recall", f"{metrics['recall']:.3f}")
-            
-            with col4:
-                st.metric("F1 Score", f"{metrics['f1']:.3f}")
+            if problem_type == "Classification":
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("Accuracy", f"{metrics['accuracy']:.3f}")
+                
+                with col2:
+                    st.metric("Precision", f"{metrics['precision']:.3f}")
+                
+                with col3:
+                    st.metric("Recall", f"{metrics['recall']:.3f}")
+                
+                with col4:
+                    st.metric("F1 Score", f"{metrics['f1']:.3f}")
+            else:  # Regression
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("R² Score", f"{metrics['r2']:.3f}")
+                
+                with col2:
+                    st.metric("MAE", f"{metrics['mae']:.3f}")
+                
+                with col3:
+                    st.metric("MSE", f"{metrics['mse']:.3f}")
+                
+                with col4:
+                    st.metric("RMSE", f"{metrics['rmse']:.3f}")
             
             # Feature importance
             if 'ml_model' in pipeline_manager.feature_importance:
@@ -531,10 +605,48 @@ def show_machine_learning(df):
             
         except Exception as e:
             st.error(f"Error training model: {str(e)}")
+            st.error("Try switching between Classification and Regression or different models.")
 
 def show_performance_analytics(df):
     """Display performance analytics and risk metrics."""
     st.header("📈 Performance Analytics")
+    
+    # Add risk management explanation
+    with st.expander("⚠️ Understanding Risk Management (Click to learn more)"):
+        st.markdown("""
+        ### 🛡️ **What is Risk Management?**
+        Risk management is like wearing a seatbelt while driving - it protects you from big losses and helps you stay in the game longer.
+        
+        ### 📊 **Key Risk Metrics Explained**
+        
+        #### **VaR (Value at Risk)**
+        - **What it shows**: Maximum expected loss in a given time period
+        - **Example**: "95% VaR = -2%" means you have a 5% chance of losing more than 2%
+        - **How to use**: Higher VaR = More risky investment
+        
+        #### **CVaR (Conditional Value at Risk)**
+        - **What it shows**: Average loss when things go really bad
+        - **Example**: "CVaR = -4%" means when you lose money, you lose 4% on average
+        - **How to use**: Lower CVaR = Better risk management
+        
+        #### **Maximum Drawdown**
+        - **What it shows**: Biggest peak-to-trough loss
+        - **Example**: "Max DD = -15%" means the worst losing streak was 15%
+        - **How to use**: Lower drawdown = More stable investment
+        
+        #### **Volatility**
+        - **What it shows**: How much the price bounces around
+        - **Example**: "Volatility = 20%" means price typically moves 20% per year
+        - **How to use**: Higher volatility = More risk and potential reward
+        
+        ### 🎯 **Risk Management Best Practices**
+        1. **Never risk more than you can afford to lose**
+        2. **Diversify your portfolio** (don't put all eggs in one basket)
+        3. **Set clear rules and stick to them**
+        4. **Monitor performance regularly**
+        
+        📚 **For detailed risk management strategies, see**: [Strategy Parameters Guide](STRATEGY_PARAMETERS_GUIDE.md)
+        """)
     
     # Calculate returns
     returns = df['close'].pct_change().dropna()
@@ -619,6 +731,304 @@ def calculate_max_drawdown(prices):
     peak = prices.expanding().max()
     drawdown = (prices - peak) / peak
     return drawdown.min() * 100
+
+def show_help_guides():
+    """Display comprehensive help and guides."""
+    st.header("📚 Help & Guides")
+    
+    # Quick Start Guide
+    with st.expander("🚀 Quick Start Guide - Get Started in 5 Minutes", expanded=True):
+        st.markdown("""
+        ### ⚡ Get Started in 5 Minutes!
+        
+        #### Step 1: Choose a Stock
+        1. In the sidebar, select a stock from the dropdown
+           - **Popular choices**: AAPL (Apple), MSFT (Microsoft), GOOGL (Google)
+        2. Pick a time period (start with "1y" for 1 year)
+        3. Click "Load Data"
+        
+        #### Step 2: Explore the Tabs
+        
+        **📊 Market Overview (Start Here!)**
+        - See the stock price chart
+        - Check daily performance
+        - Look at trading volume
+        
+        **🔧 Technical Analysis**
+        - Check the boxes for RSI, MACD, Bollinger Bands
+        - Look for patterns in the charts
+        - **Simple rule**: RSI below 30 = might be good to buy
+        
+        **💰 Strategy Backtesting**
+        - Select "RSI + Trend Strategy"
+        - Click "Run Backtest"
+        - Look at the "Total Return" - positive is good!
+        
+        **🤖 Machine Learning**
+        - Choose "Classification"
+        - Select "Random Forest"
+        - Click to see predictions
+        
+        **📈 Performance Analytics**
+        - Check the risk metrics
+        - Look at Sharpe Ratio (above 1.0 is good)
+        
+        #### Step 3: What to Look For
+        
+        **✅ Good Signs:**
+        - RSI between 30-70 (not extreme)
+        - MACD lines crossing upward
+        - Price above moving average
+        - Positive backtest returns
+        - Sharpe ratio above 1.0
+        
+        **⚠️ Warning Signs:**
+        - RSI above 70 (overbought)
+        - RSI below 30 (oversold)
+        - High volatility
+        - Negative backtest returns
+        - Sharpe ratio below 0.5
+        """)
+    
+    # Complete User Guide
+    with st.expander("📊 Complete User Guide - Everything Explained Simply"):
+        st.markdown("""
+        ### 🎯 What is This Dashboard?
+        
+        The **StockStats Alpha Lab Dashboard** is a powerful tool that helps you analyze stocks and make better investment decisions. Think of it as a "crystal ball" for the stock market that uses advanced mathematics and computer science to predict future price movements.
+        
+        ### 📈 Tab 1: Market Overview
+        
+        **What You'll See:**
+        - **Stock Price Chart**: A line graph showing how the stock price changed over time
+        - **Key Numbers**: Important statistics about the stock's performance
+        - **Volume Chart**: A bar chart showing how many shares were traded each day
+        
+        **What the Numbers Mean:**
+        - **Current Price**: How much one share costs right now
+        - **Daily Change**: How much the price went up or down today
+        - **Volume**: How many shares were bought/sold (higher = more activity)
+        
+        ### 🔧 Tab 2: Technical Analysis
+        
+        **Available Tools:**
+        
+        **📊 RSI (Relative Strength Index)**
+        - **What it shows**: Whether a stock is "overbought" or "oversold"
+        - **How to read**: 
+          - Above 70 = Stock might be too expensive (consider selling)
+          - Below 30 = Stock might be too cheap (consider buying)
+          - 50 = Neutral
+        
+        **📈 MACD (Moving Average Convergence Divergence)**
+        - **What it shows**: Momentum and trend changes
+        - **How to read**:
+          - When blue line crosses above red line = Buy signal
+          - When blue line crosses below red line = Sell signal
+        
+        **🎯 Bollinger Bands**
+        - **What it shows**: Price volatility and potential support/resistance levels
+        - **How to read**:
+          - Price near upper band = Might be overbought
+          - Price near lower band = Might be oversold
+          - Price touching bands = Potential reversal point
+        
+        ### 💰 Tab 3: Strategy Backtesting
+        
+        **Available Strategies:**
+        
+        **🎯 RSI + Trend Strategy**
+        - **What it does**: Buys when RSI is low and stock is in an uptrend
+        - **Best for**: Finding good entry points in rising markets
+        
+        **📊 MACD Crossover Strategy**
+        - **What it does**: Buys when MACD lines cross upward, sells when they cross downward
+        - **Best for**: Capturing momentum moves
+        
+        **🎪 Bollinger Bands Strategy**
+        - **What it does**: Buys when price hits lower band, sells when it hits upper band
+        - **Best for**: Range-bound markets
+        
+        ### 🤖 Tab 4: Machine Learning
+        
+        **Problem Types:**
+        
+        **🎯 Classification**
+        - **What it predicts**: Will the stock go up or down?
+        - **Output**: "Up" or "Down" prediction
+        - **Best for**: Deciding whether to buy or sell
+        
+        **📊 Regression**
+        - **What it predicts**: How much will the stock move?
+        - **Output**: Exact percentage change prediction
+        - **Best for**: Predicting the magnitude of price movements
+        
+        ### 📈 Tab 5: Performance Analytics
+        
+        **Risk Metrics:**
+        
+        **⚠️ VaR (Value at Risk)**
+        - **What it shows**: Maximum expected loss in a given time period
+        - **Example**: "95% VaR = -2%" means you have a 5% chance of losing more than 2%
+        
+        **📉 CVaR (Conditional Value at Risk)**
+        - **What it shows**: Average loss when things go really bad
+        - **Example**: "CVaR = -4%" means when you lose money, you lose 4% on average
+        
+        **📊 Maximum Drawdown**
+        - **What it shows**: Biggest peak-to-trough loss
+        - **Example**: "Max DD = -15%" means the worst losing streak was 15%
+        """)
+    
+    # Strategy Parameters Guide
+    with st.expander("🎯 Strategy Parameters & Risk Management Guide"):
+        st.markdown("""
+        ### 📊 Understanding Strategy Parameters
+        
+        Strategy parameters are the "knobs and dials" that control how your trading strategies work. Think of them as the settings on a car - you can adjust them to make the strategy more aggressive, conservative, or suitable for different market conditions.
+        
+        #### 📈 RSI Parameters
+        
+        **RSI Oversold (Default: 30)**
+        - **What it does**: Determines when a stock is considered "cheap"
+        - **Range**: 20-40
+        - **Lower values (20-25)**: More aggressive buying (buys sooner)
+        - **Higher values (35-40)**: More conservative buying (waits for deeper dips)
+        
+        **RSI Overbought (Default: 70)**
+        - **What it does**: Determines when a stock is considered "expensive"
+        - **Range**: 60-80
+        - **Lower values (60-65)**: More aggressive selling (sells sooner)
+        - **Higher values (75-80)**: More conservative selling (waits for higher peaks)
+        
+        #### ⚠️ Risk Management
+        
+        **Max Position Size (Default: 10%)**
+        - **What it does**: Limits how much of your portfolio you can invest in one stock
+        - **Range**: 5%-50%
+        - **Lower values (5%-10%)**: Conservative, diversifies risk
+        - **Higher values (30%-50%)**: Aggressive, concentrated bets
+        
+        **Risk Per Trade (Default: 2%)**
+        - **What it does**: Maximum amount you're willing to lose on any single trade
+        - **Range**: 1%-5%
+        - **Lower values (1%-2%)**: Conservative, small losses
+        - **Higher values (3%-5%)**: Aggressive, larger potential losses
+        
+        #### 🎯 How to Use These Parameters
+        
+        **Conservative Strategy:**
+        - RSI Oversold: 35, Overbought: 65
+        - Max Position: 8%
+        - Risk Per Trade: 1.5%
+        - **Result**: Lower returns but more stable
+        
+        **Balanced Strategy:**
+        - RSI Oversold: 30, Overbought: 70
+        - Max Position: 12%
+        - Risk Per Trade: 2.5%
+        - **Result**: Moderate returns and volatility
+        
+        **Aggressive Strategy:**
+        - RSI Oversold: 25, Overbought: 75
+        - Max Position: 20%
+        - Risk Per Trade: 3%
+        - **Result**: Higher returns but more volatile
+        
+        #### 🛡️ Risk Management Best Practices
+        
+        1. **Never risk more than you can afford to lose**
+        2. **Diversify your portfolio** (don't put all eggs in one basket)
+        3. **Set clear rules and stick to them**
+        4. **Monitor performance regularly**
+        5. **Start with small amounts and paper trading**
+        """)
+    
+    # Troubleshooting
+    with st.expander("🆘 Troubleshooting & FAQ"):
+        st.markdown("""
+        ### Common Issues and Solutions
+        
+        **❌ Dashboard Won't Load**
+        - Make sure you're using the correct URL: http://localhost:8501
+        - Check that the application is running
+        - Try refreshing your browser
+        
+        **❌ Data Won't Load**
+        - Check your internet connection
+        - Try a different stock ticker
+        - Select a different time period
+        
+        **❌ Results Look Wrong**
+        - Make sure you have enough data (try a longer time period)
+        - Check that your parameters make sense
+        - Try different model types or strategies
+        
+        **❌ Machine Learning Errors**
+        - Try switching between Classification and Regression
+        - Try different model types
+        - Make sure you have enough data
+        
+        ### Frequently Asked Questions
+        
+        **Q: Is this financial advice?**
+        A: No, this is a research tool. Always do your own research and consider consulting a financial advisor.
+        
+        **Q: Can I use this with real money?**
+        A: Start with paper trading or small amounts. Never risk more than you can afford to lose.
+        
+        **Q: How accurate are the predictions?**
+        A: Past performance doesn't guarantee future results. Use this as one tool in your research.
+        
+        **Q: What's the best strategy?**
+        A: The best strategy is the one you understand and can stick to consistently. Test different approaches.
+        
+        **Q: How often should I check the dashboard?**
+        A: For research purposes, daily or weekly. For actual trading, follow your strategy rules.
+        """)
+    
+    # Contact and Support
+    with st.expander("📞 Support & Resources"):
+        st.markdown("""
+        ### 📚 Additional Resources
+        
+        **Documentation Files:**
+        - `STRATEGY_PARAMETERS_GUIDE.md` - Complete parameter reference
+        - `DASHBOARD_USER_GUIDE.md` - Detailed user guide
+        - `QUICK_START_GUIDE.md` - Quick start instructions
+        - `ENHANCEMENT_SUMMARY.md` - Feature overview
+        
+        **Demo Scripts:**
+        - `strategy_parameters_demo.py` - Live parameter demonstration
+        - `enhanced_demo.py` - Complete feature demonstration
+        
+        ### 🎯 Getting Help
+        
+        **For Technical Issues:**
+        1. Check the troubleshooting section above
+        2. Try refreshing the dashboard
+        3. Restart the application if needed
+        
+        **For Learning:**
+        1. Start with the Quick Start Guide
+        2. Use the built-in help sections in each tab
+        3. Experiment with different settings
+        4. Read the complete user guide
+        
+        **For Advanced Users:**
+        1. Explore the source code in the `src/` directory
+        2. Run the demo scripts
+        3. Check the test files for examples
+        4. Modify parameters and strategies
+        
+        ### ⚠️ Important Disclaimers
+        
+        - **This is a research tool, not financial advice**
+        - **Past performance doesn't guarantee future results**
+        - **All investments carry risk**
+        - **Never invest more than you can afford to lose**
+        - **Consider consulting a financial advisor for large investments**
+        """)
 
 if __name__ == "__main__":
     main()
