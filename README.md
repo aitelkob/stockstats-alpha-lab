@@ -295,9 +295,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, suggestions, or collaboration opportunities:
 
-- **Email**: candidate@example.com
-- **LinkedIn**: [Your LinkedIn Profile]
-- **GitHub**: [Your GitHub Profile]
+- **Email**: aitelkobyoussef@gmail.com
+- **LinkedIn**: [[youssef](https://www.linkedin.com/in/youssef-ait-el-kob/)]
+- **GitHub**: [GitHub Profile](https://github.com/aitelkob)
 
 ---
 
