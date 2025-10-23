@@ -21,40 +21,44 @@ __version__ = "0.1.0"
 __author__ = "Data Scientist"
 __email__ = "candidate@example.com"
 
+from .backtest import BacktestEngine, StrategyBuilder, run_strategy_comparison
+
 # Import main classes for easy access
 from .data import DataLoader, get_sample_tickers, validate_data_quality
-from .indicators import add_basic_indicators, add_comprehensive_indicators, IndicatorEngine
-from .labeling import LabelingEngine, create_feature_matrix, calculate_information_coefficient
-from .models import ModelPipeline, create_baseline_models, compare_models
-from .backtest import BacktestEngine, StrategyBuilder, run_strategy_comparison
+from .indicators import (
+    IndicatorEngine,
+    add_basic_indicators,
+    add_comprehensive_indicators,
+)
+from .labeling import (
+    LabelingEngine,
+    calculate_information_coefficient,
+    create_feature_matrix,
+)
+from .models import ModelPipeline, compare_models, create_baseline_models
 from .plots import Plotter
 
 __all__ = [
     # Data
     "DataLoader",
-    "get_sample_tickers", 
+    "get_sample_tickers",
     "validate_data_quality",
-    
     # Indicators
     "add_basic_indicators",
     "add_comprehensive_indicators",
     "IndicatorEngine",
-    
     # Labeling
     "LabelingEngine",
     "create_feature_matrix",
     "calculate_information_coefficient",
-    
     # Models
     "ModelPipeline",
     "create_baseline_models",
     "compare_models",
-    
     # Backtesting
     "BacktestEngine",
     "StrategyBuilder",
     "run_strategy_comparison",
-    
     # Plotting
     "Plotter",
 ]

@@ -43,14 +43,20 @@ clean:  ## Clean up generated files
 run-notebooks:  ## Launch Jupyter notebooks
 	jupyter notebook notebooks/
 
+run-streamlit:  ## Launch Streamlit dashboard
+	streamlit run streamlit_app.py
+
+run-dash:  ## Launch Dash dashboard
+	python dash_app.py
+
 run-demo:  ## Run a quick demo
-	python -c "from src.data import DataLoader; from src.indicators import add_basic_indicators; loader = DataLoader(); df = loader.load_single_ticker('AAPL', period='6mo'); df = add_basic_indicators(df); print(f'Demo complete! Added {len(df.columns) - 5} indicators to AAPL data.')"
+	python -c "import sys; sys.path.append('src'); from data import DataLoader; from indicators import add_basic_indicators; loader = DataLoader(); df = loader.load_single_ticker('AAPL', period='6mo'); df = add_basic_indicators(df); print(f'Demo complete! Added {len(df.columns) - 5} indicators to AAPL data.')"
 
 run-full-pipeline:  ## Run the complete pipeline
 	python -c "import sys; sys.path.append('src'); from data import DataLoader; from indicators import add_basic_indicators; from labeling import LabelingEngine; from backtest import BacktestEngine, StrategyBuilder; loader = DataLoader(); df = loader.load_single_ticker('AAPL', period='1y'); df = add_basic_indicators(df); labeler = LabelingEngine(); forward_returns = labeler.forward_return_label(df, horizon=5); signals = StrategyBuilder.rsi_trend_strategy(df); engine = BacktestEngine(); results = engine.run_backtest(df, signals, strategy_name='RSI_Trend'); print(f'Pipeline complete! Strategy return: {results[\"total_return\"]:.2%}, Sharpe: {results[\"sharpe_ratio\"]:.2f}')"
 
 check-deps:  ## Check if all dependencies are installed
-	python -c "import pandas, numpy, stockstats, yfinance, sklearn, xgboost, matplotlib, seaborn; print('All dependencies are installed!')"
+	python -c "import pandas, numpy, stockstats, yfinance, sklearn, matplotlib, seaborn; print('Core dependencies are installed!')"
 
 setup-env:  ## Set up development environment
 	python -m venv venv
