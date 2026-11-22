@@ -127,7 +127,7 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
 - Basic exploratory data analysis
 
 ### 2. Feature Engineering (`02_feature_engineering_stockstats.ipynb`)
-- 50+ technical indicators with `stockstats`
+- Technical indicator engineering with `stockstats`
 - Validation against reference implementations
 - Information Coefficient analysis
 - Feature selection and ranking
@@ -135,7 +135,7 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
 ### 3. Signal Evaluation (`03_signal_eval_crossval.ipynb`)
 - Forward return labeling with time discipline
 - Triple-barrier labeling for classification
-- Walk-forward cross-validation
+- Time-series signal evaluation
 - IC analysis and model evaluation
 
 ### 4. Strategy Backtesting (`04_strategy_backtests.ipynb`)
@@ -279,11 +279,7 @@ This project acknowledges and addresses known issues with the `stockstats` libra
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Bug reports, reproducible research examples, documentation improvements, and focused code changes are welcome. Open an [issue](https://github.com/aitelkob/stockstats-alpha-lab/issues) to discuss a bug or proposal, then submit a pull request with a clear description and the commands or data assumptions needed to reproduce the change. Run `pytest tests/` before opening a pull request when practical. Please note that no project license is currently included.
 
 ## 📄 License
 
@@ -302,10 +298,6 @@ For questions, suggestions, or collaboration opportunities:
 - **Email**: aitelkobyoussef@gmail.com
 - **LinkedIn**: [[youssef](https://www.linkedin.com/in/youssef-ait-el-kob/)]
 - **GitHub**: [GitHub Profile](https://github.com/aitelkob)
-
-## Contributing
-
-Bug reports, reproducible research examples, documentation improvements, and focused code changes are welcome. Open an [issue](https://github.com/aitelkob/stockstats-alpha-lab/issues) to discuss a bug or proposal, then submit a pull request with a clear description and the commands or data assumptions needed to reproduce the change. Run `pytest tests/` before opening a pull request when practical. Please note that no project license is currently included.
 
 ---
 
