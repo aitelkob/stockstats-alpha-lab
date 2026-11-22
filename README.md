@@ -1,17 +1,17 @@
 # StockStats Alpha Lab
 
-> **"I built a reproducible signal-factory that engineers 50+ technical factors with `stockstats`, ranks them by out-of-sample predictive power, and composes them into simple, explainable strategies with audited backtests and risk controls."**
+> **Website:** [StockStats Alpha Lab](https://aitelkob.github.io/stockstats-alpha-lab/)
 
-A comprehensive quantitative finance research platform that demonstrates signal design, rigorous experimentation, and clean engineering using the `stockstats` library. This project showcases end-to-end thinking from data loading through feature engineering to strategy backtesting and risk management.
+A Python research toolkit for working with OHLCV market data, engineering technical indicators with `stockstats`, creating time-series labels, evaluating signals, backtesting strategies with configurable costs, and reviewing risk metrics. It includes reusable modules, Jupyter notebooks, tests, and an interactive Streamlit dashboard. Results depend on the data and assumptions supplied by the user; the project does not establish predictive performance.
 
 ## 🚀 Key Features
 
-- **One-line indicators**: `df['rsi_14']`, `df['macd']`, `df['close_10_ema']` - 50+ technical indicators
-- **Time-series discipline**: Proper forward return labeling with no look-ahead bias
-- **Vectorized backtesting**: Realistic transaction costs, slippage, and risk controls
-- **Walk-forward validation**: Time-series aware cross-validation
-- **Comprehensive reporting**: Professional tearsheets and risk analysis
-- **Production-ready**: Unit tests, error handling, and reproducible results
+- **Technical indicators**: Trend, momentum, volatility, volume, and oscillator features via `src/indicators.py`
+- **Time-series labels and signal evaluation**: Forward returns, triple-barrier labels, and information coefficient helpers in `src/labeling.py`
+- **Strategy backtesting**: Configurable commission and slippage in `src/backtest.py`
+- **Model pipelines**: Time-ordered validation split and scikit-learn pipelines in `src/models.py`
+- **Risk metrics and plots**: Return, drawdown, VaR/CVaR, and reporting helpers in `src/risk_metrics.py` and `src/plots.py`
+- **Interactive dashboard**: Streamlit app in `streamlit_app.py`
 
 ## 📁 Project Structure
 
@@ -34,9 +34,10 @@ stockstats-alpha-lab/
 │   ├── test_indicators.py       # Indicator validation tests
 │   ├── test_labeling.py         # Labeling discipline tests
 │   └── test_backtest.py         # Backtesting engine tests
-├── reports/                     # Generated reports and artifacts
-│   └── run_YYYYMMDD/           # Timestamped run outputs
 ├── pyproject.toml              # Dependencies and configuration
+├── requirements.txt            # Dashboard/runtime dependencies
+├── Makefile                    # Common development commands
+├── streamlit_app.py            # Interactive dashboard
 └── README.md                   # This file
 ```
 
@@ -55,14 +56,14 @@ stockstats-alpha-lab/
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.10+ (as declared in `pyproject.toml`)
 - pip or conda
 
 ### Quick Start
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/aitelkob/stockstats-alpha-lab.git
 cd stockstats-alpha-lab
 
 # Install dependencies
@@ -71,7 +72,10 @@ pip install -e .
 # Run tests to verify installation
 pytest tests/
 
-# Launch Jupyter notebooks
+# Launch the Streamlit dashboard
+streamlit run streamlit_app.py
+
+# Or launch the research notebooks
 jupyter notebook notebooks/
 ```
 
@@ -123,7 +127,7 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
 - Basic exploratory data analysis
 
 ### 2. Feature Engineering (`02_feature_engineering_stockstats.ipynb`)
-- 50+ technical indicators with `stockstats`
+- Technical indicator engineering with `stockstats`
 - Validation against reference implementations
 - Information Coefficient analysis
 - Feature selection and ranking
@@ -131,7 +135,7 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
 ### 3. Signal Evaluation (`03_signal_eval_crossval.ipynb`)
 - Forward return labeling with time discipline
 - Triple-barrier labeling for classification
-- Walk-forward cross-validation
+- Time-series signal evaluation
 - IC analysis and model evaluation
 
 ### 4. Strategy Backtesting (`04_strategy_backtests.ipynb`)
@@ -275,15 +279,11 @@ This project acknowledges and addresses known issues with the `stockstats` libra
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Bug reports, reproducible research examples, documentation improvements, and focused code changes are welcome. Open an [issue](https://github.com/aitelkob/stockstats-alpha-lab/issues) to discuss a bug or proposal, then submit a pull request with a clear description and the commands or data assumptions needed to reproduce the change. Run `pytest tests/` before opening a pull request when practical. Please note that no project license is currently included.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+No `LICENSE` file is currently present in this repository. Do not assume a license grant; contact the maintainer with licensing questions.
 
 ## 🙏 Acknowledgments
 
